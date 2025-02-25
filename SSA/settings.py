@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-rr+9qxn%+jtksur*e5khhhf@!i_s8-2t!r9_&j$ap3fc%ex3i+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost']
-
+RECAPTCHA_SECRET_KEY = "6LdlpuEqAAAAAA1pGEZ_b3A6_I5ssILG4qEdCbo2"
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
