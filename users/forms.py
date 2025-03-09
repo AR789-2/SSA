@@ -26,3 +26,7 @@ class UserRegistrationForm(UserCreationForm):
             profile.nickname = self.cleaned_data['nickname']
             profile.save()
         return user
+    
+class TopUpForm(forms.Form):
+    label="Amount to Top-Up"
+    amount=forms.DecimalField(min_value=0.01,decimal_places=2,max_digits=5)
