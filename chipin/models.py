@@ -31,7 +31,7 @@ class Event(models.Model):
     name = models.CharField(max_length=100)
     date = models.DateField()
     total_spend = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, default='Pending')  # Can be 'Pending' or 'Active'
+    status = models.CharField(max_length=20, default='Pending')  # Can be 'Pending', 'Active' or 'Archived'
     group = models.ForeignKey(Group, related_name='events', on_delete=models.CASCADE)
     members = models.ManyToManyField(User, related_name='event_memberships', blank=True)  
 

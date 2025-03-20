@@ -82,7 +82,7 @@ def user(request):
     profile = request.user.profile
     return render(request, 'users/user.html', {
         'user': request.user,
-        'balance': profile.balance
+        'balance': profile.balance,
     })
 
 @login_required(login_url='users:login')

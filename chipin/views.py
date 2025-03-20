@@ -13,6 +13,59 @@ from .models import GroupJoinRequest
 from .models import Group, Comment
 from .forms import CommentForm
 from .models import Event
+from django.shortcuts import get_object_or_404, redirect
+from django.db import transaction
+from chipin.models import Event
+from users.models import Transaction
+from datetime import datetime
+
+@login_required
+def transfer_funds(request, group_id, event_id):
+    group = get_object_or_404(Group, id=group_id)
+    if request.user != group.admin:
+        messages.error(request, "Only the group administrator can use this.")
+        return redirect('chipin:group_detail', group_id=group.id)
+    else:
+        #events = group.events.all()
+        event = get_object_or_404(Event, id=event_id, group=group)
+        event_share_info = {}
+        comments = group.comments.all().order_by('-created_at')
+        form = CommentForm()
+        comment_to_edit = None
+        event_share = event.calculate_share()
+        user_eligible = request.user.profile.max_spend >= event_share
+        user_has_joined = request.user in event.members.all()
+        event_share_info[event] = {
+            'share': event_share,
+            'eligible': user_eligible,
+            'status': event.status,
+            'joined': user_has_joined
+        }
+
+        trans_done = True
+        trans_data = []
+        for mem in group.members.all():
+            profile = mem.profile
+            amount = event_share
+            if profile.balance >= amount:
+                trans_data.append(mem)
+            else:
+                trans_done = False
+
+        if trans_done:
+            for mem in trans_data:
+                profile = mem.profile
+                amount = event_share
+                profile.balance -= amount
+                profile.save()
+                Transaction.objects.create(user=mem, amount=amount)
+            messages.success(request, f"Transaction Successful.")
+            event.status = "Archived"
+            event.save()
+        else:
+            messages.error(request, "INVALID FUNDS.")
+
+        return redirect('chipin:group_detail', group_id=group.id)
 
 @login_required
 def group_detail(request, group_id, edit_comment_id=None):
@@ -305,7 +358,7 @@ def create_group(request):
         form = GroupCreationForm(user=request.user)
     return render(request, 'chipin/create_group.html', {'form': form})
 
-@login_required
+'''@login_required
 def group_detail(request, group_id, edit_comment_id=None):
     group = get_object_or_404(Group, id=group_id)
     comments = group.comments.all().order_by('-created_at')  # Fetch all comments for the group
@@ -333,7 +386,7 @@ def group_detail(request, group_id, edit_comment_id=None):
         'comments': comments,
         'form': form,
         'comment_to_edit': comment_to_edit,
-    })
+    })'''
 
 @login_required
 def delete_group(request, group_id):
